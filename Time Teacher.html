@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-T">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn to Tell Time!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Light blue background */
+            color: #1e3a8a; /* Dark blue text */
+        }
+        .clock-container {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .clock-face {
+            width: 100%;
+            height: 100%;
+            border: 8px solid #3b82f6; /* Blue border */
+            border-radius: 50%;
+            background-color: #ffffff; /* White face */
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 4px; /* Rounded hands */
+        }
+        .hour-hand {
+            width: 8px;
+            height: 70px;
+            background-color: #1e3a8a; /* Dark blue hour hand */
+            z-index: 1;
+        }
+        .minute-hand {
+            width: 6px;
+            height: 100px;
+            background-color: #2563eb; /* Lighter blue minute hand */
+            z-index: 2;
+        }
+        .center-dot {
+            width: 16px;
+            height: 16px;
+            background-color: #ef4444; /* Red center dot */
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+        }
+        .clock-number {
+            position: absolute;
+            font-size: 1.5rem; /* Larger numbers */
+            font-weight: 600;
+            color: #1e3a8a;
+            font-family: 'Fredoka One', cursive;
+        }
+        .btn {
+            font-family: 'Fredoka One', cursive;
+            background-color: #3b82f6; /* Blue button */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+        }
+        .btn:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+        }
+        .btn-secondary {
+            background-color: #60a5fa; /* Lighter blue for secondary actions */
+        }
+        .btn-secondary:hover {
+            background-color: #3b82f6;
+        }
+        .btn-green {
+            background-color: #22c55e; /* Green */
+        }
+        .btn-green:hover {
+            background-color: #16a34a;
+        }
+        .btn-red {
+            background-color: #ef4444; /* Red */
+        }
+        .btn-red:hover {
+            background-color: #dc2626;
+        }
+        .input-field {
+            padding: 8px 12px;
+            border: 2px solid #60a5fa;
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 60px;
+            text-align: center;
+            color: #1e3a8a;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        .explanation-box {
+            background-color: #e0f2fe; /* Very light blue */
+            border: 2px dashed #60a5fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        .feedback-message {
+            min-height: 30px; /* Reserve space for message */
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .correct {
+            color: #16a34a; /* Green text */
+        }
+        .incorrect {
+            color: #dc2626; /* Red text */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl max-w-2xl w-full">
+        <h1 class="text-4xl sm:text-5xl font-bold mb-6 title-font text-blue-600">Let's Learn to Tell Time!</h1>
+
+        <div class="clock-container mb-6">
+            <div class="clock-face">
+                <div class="hand hour-hand" id="hourHand"></div>
+                <div class="hand minute-hand" id="minuteHand"></div>
+                <div class="center-dot"></div>
+            </div>
+        </div>
+
+        <div id="digitalTime" class="text-4xl font-bold mb-6 text-blue-700 title-font">03:00</div>
+
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg shadow">
+            <h2 class="text-2xl font-semibold mb-3 title-font text-blue-600">Set the Clock!</h2>
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                <div>
+                    <label for="hourInput" class="mr-1 text-lg">Hour (1-12):</label>
+                    <input type="number" id="hourInput" min="1" max="12" value="3" class="input-field">
+                </div>
+                <div>
+                    <label for="minuteInput" class="mr-1 text-lg">Minute (0-59):</label>
+                    <input type="number" id="minuteInput" min="0" max="59" value="0" class="input-field">
+                </div>
+                <button id="setTimeButton" class="btn btn-green w-full sm:w-auto mt-2 sm:mt-0">Set Time</button>
+            </div>
+        </div>
+
+        <button id="randomTimeButton" class="btn btn-secondary mb-8 w-full sm:w-auto">Show a Random Time</button>
+
+        <div class="text-left space-y-4 mb-8">
+            <div class="explanation-box">
+                <h3 class="text-xl font-semibold mb-2 title-font text-blue-600">The Hour Hand 🕒</h3>
+                <p class="text-base">The <strong class="text-blue-700">short hand</strong> is the <strong>hour hand</strong>. It tells us which hour it is. If it points to the '3', it's 3 o'clock. If it's between '3' and '4', the hour is still '3' until it reaches '4'!</p>
+            </div>
+            <div class="explanation-box">
+                <h3 class="text-xl font-semibold mb-2 title-font text-blue-600">The Minute Hand 🕰️</h3>
+                <p class="text-base">The <strong class="text-blue-700">long hand</strong> is the <strong>minute hand</strong>. It tells us how many minutes past the hour it is. Each big number on the clock means 5 minutes. So if it points to '1', that's 5 minutes. If it points to '2', that's 10 minutes, and so on. If it points to '12', it's 'o'clock' (zero minutes past the hour).</p>
+            </div>
+             <div class="explanation-box">
+                <h3 class="text-xl font-semibold mb-2 title-font text-blue-600">Putting It Together! ✨</h3>
+                <p class="text-base">First, look at the <strong>short hour hand</strong> to find the hour. Then, look at the <strong>long minute hand</strong> to find the minutes. For example, if the hour hand is past the '7' and the minute hand is on the '6', the time is 7:30 (seven thirty)!</p>
+            </div>
+        </div>
+
+        <div class="p-6 bg-yellow-50 rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-4 title-font text-yellow-600">Quiz Time! 🧠</h2>
+            <p class="mb-3 text-lg">The clock below shows a time. Can you write it down?</p>
+            
+            <div class="clock-container mb-4" id="quizClockContainer">
+                 <div class="clock-face" id="quizClockFace">
+                    <div class="hand hour-hand" id="quizHourHand"></div>
+                    <div class="hand minute-hand" id="quizMinuteHand"></div>
+                    <div class="center-dot"></div>
+                </div>
+            </div>
+            <div id="quizDigitalTimeHidden" class="hidden"></div> <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
+                <div>
+                    <label for="quizHourInput" class="mr-1 text-lg">Hour:</label>
+                    <input type="number" id="quizHourInput" min="1" max="12" class="input-field">
+                </div>
+                <div>
+                    <label for="quizMinuteInput" class="mr-1 text-lg">Minute:</label>
+                    <input type="number" id="quizMinuteInput" min="0" max="59" class="input-field">
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                <button id="checkAnswerButton" class="btn btn-green w-full sm:w-auto">Check My Answer!</button>
+                <button id="newQuizTimeButton" class="btn btn-secondary w-full sm:w-auto">New Quiz Time</button>
+            </div>
+            <div id="feedbackMessage" class="feedback-message text-xl mt-4"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const hourHand = document.getElementById('hourHand');
+        const minuteHand = document.getElementById('minuteHand');
+        const digitalTimeDisplay = document.getElementById('digitalTime');
+        const hourInput = document.getElementById('hourInput');
+        const minuteInput = document.getElementById('minuteInput');
+        const setTimeButton = document.getElementById('setTimeButton');
+        const randomTimeButton = document.getElementById('randomTimeButton');
+        const clockFace = document.querySelector('.clock-face'); // For main clock
+
+        // Quiz DOM Elements
+        const quizHourHand = document.getElementById('quizHourHand');
+        const quizMinuteHand = document.getElementById('quizMinuteHand');
+        const quizClockFace = document.getElementById('quizClockFace'); // For quiz clock
+        const quizHourInput = document.getElementById('quizHourInput');
+        const quizMinuteInput = document.getElementById('quizMinuteInput');
+        const checkAnswerButton = document.getElementById('checkAnswerButton');
+        const newQuizTimeButton = document.getElementById('newQuizTimeButton');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        let currentQuizHour = 0;
+        let currentQuizMinute = 0;
+
+        // Function to draw clock numbers
+        function drawClockNumbers(faceElement) {
+            for (let i = 1; i <= 12; i++) {
+                const angle = (i * 30 - 90) * (Math.PI / 180); // -90 to start from top
+                const x = 150 + 120 * Math.cos(angle); // 150 is center, 120 is radius
+                const y = 150 + 120 * Math.sin(angle);
+                const numberDiv = document.createElement('div');
+                numberDiv.classList.add('clock-number');
+                numberDiv.style.left = `${x - 12}px`; // Adjust for number size
+                numberDiv.style.top = `${y - 15}px`;  // Adjust for number size
+                numberDiv.textContent = i;
+                faceElement.appendChild(numberDiv);
+            }
+            // Add minute markers
+            for (let i = 0; i < 60; i++) {
+                const marker = document.createElement('div');
+                marker.style.position = 'absolute';
+                marker.style.left = '50%';
+                marker.style.top = '2px'; // Position at the edge
+                marker.style.transformOrigin = '0 148px'; // 150 (center) - 2 (top)
+                marker.style.width = (i % 5 === 0) ? '3px' : '1px';
+                marker.style.height = (i % 5 === 0) ? '12px' : '6px';
+                marker.style.backgroundColor = (i % 5 === 0) ? '#3b82f6' : '#9ca3af';
+                marker.style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
+                faceElement.insertBefore(marker, faceElement.firstChild); // Insert before numbers
+            }
+        }
+
+        // Function to update clock hands and digital display
+        function updateClock(hour, minute, isQuiz = false) {
+            // Validate inputs
+            hour = parseInt(hour);
+            minute = parseInt(minute);
+
+            if (isNaN(hour) || hour < 1 || hour > 12) hour = 3; // Default to 3
+            if (isNaN(minute) || minute < 0 || minute > 59) minute = 0; // Default to 0
+
+            // Calculate rotations
+            // Hour hand moves 30 degrees per hour (360/12) + 0.5 degrees per minute (30/60)
+            const hourRotation = (hour % 12 + minute / 60) * 30;
+            // Minute hand moves 6 degrees per minute (360/60)
+            const minuteRotation = minute * 6;
+
+            if (isQuiz) {
+                quizHourHand.style.transform = `translateX(-50%) rotate(${hourRotation}deg)`;
+                quizMinuteHand.style.transform = `translateX(-50%) rotate(${minuteRotation}deg)`;
+            } else {
+                hourHand.style.transform = `translateX(-50%) rotate(${hourRotation}deg)`;
+                minuteHand.style.transform = `translateX(-50%) rotate(${minuteRotation}deg)`;
+                
+                // Update digital display
+                const displayHour = String(hour).padStart(2, '0');
+                const displayMinute = String(minute).padStart(2, '0');
+                digitalTimeDisplay.textContent = `${displayHour}:${displayMinute}`;
+
+                // Update input fields to reflect the current clock time
+                hourInput.value = hour;
+                minuteInput.value = minute;
+            }
+        }
+
+        // Event Listeners for main clock
+        setTimeButton.addEventListener('click', () => {
+            const h = parseInt(hourInput.value);
+            const m = parseInt(minuteInput.value);
+            if (h >= 1 && h <= 12 && m >= 0 && m <= 59) {
+                updateClock(h, m);
+            } else {
+                alert("Please enter a valid hour (1-12) and minute (0-59).");
+            }
+        });
+
+        randomTimeButton.addEventListener('click', () => {
+            const randomHour = Math.floor(Math.random() * 12) + 1;
+            const randomMinute = Math.floor(Math.random() * 60);
+            updateClock(randomHour, randomMinute);
+        });
+
+        // --- Quiz Logic ---
+        function setNewQuizTime() {
+            currentQuizHour = Math.floor(Math.random() * 12) + 1;
+            currentQuizMinute = Math.floor(Math.random() * 12) * 5; // Minutes in steps of 5 for simplicity
+            if (currentQuizMinute === 60) currentQuizMinute = 0; // Handle 60 as 00
+
+            updateClock(currentQuizHour, currentQuizMinute, true);
+            quizHourInput.value = '';
+            quizMinuteInput.value = '';
+            feedbackMessage.textContent = '';
+            feedbackMessage.className = 'feedback-message text-xl mt-4'; // Reset class
+        }
+
+        checkAnswerButton.addEventListener('click', () => {
+            const guessedHour = parseInt(quizHourInput.value);
+            const guessedMinute = parseInt(quizMinuteInput.value);
+
+            if (isNaN(guessedHour) || isNaN(guessedMinute)) {
+                feedbackMessage.textContent = "Please enter both hour and minute!";
+                feedbackMessage.className = 'feedback-message text-xl mt-4 incorrect';
+                return;
+            }
+            
+            // Normalize 0 minutes for comparison if user types 0 or 00
+            const normalizedGuessedMinute = guessedMinute === 0 ? 0 : guessedMinute;
+            const normalizedCurrentMinute = currentQuizMinute === 0 ? 0 : currentQuizMinute;
+
+
+            if (guessedHour === currentQuizHour && normalizedGuessedMinute === normalizedCurrentMinute) {
+                feedbackMessage.textContent = "Correct! 🎉 Well done!";
+                feedbackMessage.className = 'feedback-message text-xl mt-4 correct';
+            } else {
+                const correctTimeStr = `${String(currentQuizHour).padStart(2, '0')}:${String(currentQuizMinute).padStart(2, '0')}`;
+                feedbackMessage.textContent = `Not quite! The correct time was ${correctTimeStr}. Try another one!`;
+                feedbackMessage.className = 'feedback-message text-xl mt-4 incorrect';
+            }
+        });
+
+        newQuizTimeButton.addEventListener('click', setNewQuizTime);
+
+        // Initial setup
+        drawClockNumbers(clockFace); // Draw numbers on main clock
+        drawClockNumbers(quizClockFace); // Draw numbers on quiz clock
+        updateClock(3, 0); // Initial time for main clock (e.g., 3:00)
+        setNewQuizTime(); // Initial time for quiz clock
+    </script>
+
+</body>
+</html>
