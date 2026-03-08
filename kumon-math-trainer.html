@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Superstar Trainer 🌟</title>
+<style>
+  :root {
+    --sky: #4FC3F7;
+    --sun: #FFD54F;
+    --grass: #66BB6A;
+    --coral: #FF7043;
+    --purple: #AB47BC;
+    --navy: #1A237E;
+    --white: #FFFFFF;
+    --light: #F3F4F6;
+    --gold: #F9A825;
+    --correct: #43A047;
+    --wrong: #E53935;
+    --card-bg: #FFFDE7;
+    --shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 50%, #E8F5E9 100%);
+    min-height: 100vh;
+    color: #212121;
+  }
+
+  /* ========== HEADER ========== */
+  #app-header {
+    background: linear-gradient(90deg, var(--navy) 0%, #283593 100%);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  #app-header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+  #streak-badge {
+    background: var(--gold);
+    color: #212121;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  #total-stars-badge {
+    background: var(--purple);
+    color: white;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  /* ========== MAIN CONTAINER ========== */
+  #main { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+
+  /* ========== SCREENS ========== */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ========== HOME SCREEN ========== */
+  #home-welcome {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  #home-welcome h2 {
+    font-size: 2rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  #home-welcome p {
+    font-size: 1.1rem;
+    color: #555;
+  }
+
+  #levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+
+  .level-card {
+    background: var(--card-bg);
+    border-radius: 18px;
+    padding: 20px 16px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 3px solid transparent;
+    position: relative;
+    text-align: center;
+  }
+  .level-card:hover:not(.locked) { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+  .level-card.locked { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.4); }
+  .level-card.mastered { border-color: var(--gold); background: #FFFDE7; }
+  .level-card.mastered::after {
+    content: '⭐ MASTERED';
+    position: absolute;
+    top: -12px;
+    right: 10px;
+    background: var(--gold);
+    color: #212121;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 3px 8px;
+  }
+  .level-icon { font-size: 2.8rem; margin-bottom: 10px; }
+  .level-title { font-size: 1.05rem; font-weight: bold; color: var(--navy); margin-bottom: 6px; }
+  .level-desc { font-size: 0.85rem; color: #666; margin-bottom: 10px; }
+  .level-progress-bar-wrap {
+    background: #ddd;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .level-progress-bar { height: 100%; border-radius: 8px; background: var(--grass); transition: width 0.5s; }
+  .level-progress-text { font-size: 0.78rem; color: #888; }
+  .lock-icon { font-size: 2rem; margin-bottom: 8px; }
+
+  /* ========== PRACTICE SCREEN ========== */
+  #practice-screen { max-width: 600px; margin: 0 auto; }
+
+  #practice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  #practice-title { font-size: 1.4rem; font-weight: bold; color: var(--navy); }
+  #practice-meta { display: flex; gap: 14px; align-items: center; }
+  #timer-display {
+    background: var(--coral);
+    color: white;
+    border-radius: 12px;
+    padding: 5px 14px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    min-width: 70px;
+    text-align: center;
+  }
+  #timer-display.urgent { background: var(--wrong); animation: pulse 0.5s infinite; }
+  #score-display {
+    background: var(--grass);
+    color: white;
+    border-radius: 12px;
+    padding: 5px 14px;
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  #question-card {
+    background: white;
+    border-radius: 24px;
+    padding: 36px 28px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    margin-bottom: 22px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #question-text {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--navy);
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+  #question-hint {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  /* Multiple choice */
+  #choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .choice-btn {
+    background: #EDE7F6;
+    border: 3px solid #B39DDB;
+    border-radius: 16px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--navy);
+    padding: 18px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .choice-btn:hover { background: #D1C4E9; transform: scale(1.05); }
+  .choice-btn.correct { background: #C8E6C9; border-color: var(--correct); color: var(--correct); }
+  .choice-btn.wrong { background: #FFCDD2; border-color: var(--wrong); color: var(--wrong); }
+  .choice-btn:disabled { cursor: default; }
+
+  /* Type-in answer */
+  #type-answer-wrap { display: flex; gap: 12px; align-items: center; flex-direction: column; width: 100%; }
+  #answer-input {
+    font-size: 2.2rem;
+    font-weight: bold;
+    text-align: center;
+    border: 3px solid #B39DDB;
+    border-radius: 14px;
+    padding: 12px 20px;
+    width: 180px;
+    color: var(--navy);
+    outline: none;
+    background: #F3F0FF;
+  }
+  #answer-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(171,71,188,0.2); }
+  #answer-input.correct { border-color: var(--correct); background: #E8F5E9; }
+  #answer-input.wrong { border-color: var(--wrong); background: #FFEBEE; }
+  #submit-btn {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 14px 36px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 1px;
+  }
+  #submit-btn:hover { background: #283593; transform: scale(1.04); }
+
+  /* Feedback overlay */
+  #feedback-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  #feedback-overlay.show { display: flex; }
+  #feedback-box {
+    background: white;
+    border-radius: 28px;
+    padding: 40px 48px;
+    text-align: center;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+    max-width: 380px;
+    width: 90%;
+    animation: pop 0.3s ease;
+  }
+  #feedback-emoji { font-size: 4rem; margin-bottom: 12px; }
+  #feedback-msg { font-size: 1.5rem; font-weight: bold; margin-bottom: 8px; }
+  #feedback-detail { font-size: 1rem; color: #555; margin-bottom: 20px; }
+  #feedback-next-btn {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    padding: 12px 32px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  #feedback-next-btn:hover { background: #283593; }
+
+  /* Progress bar during practice */
+  #practice-progress-wrap {
+    background: #ddd;
+    border-radius: 8px;
+    height: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  #practice-progress-bar {
+    height: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--sky), var(--purple));
+    transition: width 0.4s;
+  }
+  #practice-q-counter { text-align: center; font-size: 0.9rem; color: #888; margin-bottom: 14px; }
+
+  /* ========== RESULTS SCREEN ========== */
+  #results-screen { max-width: 540px; margin: 0 auto; text-align: center; }
+  #results-card {
+    background: white;
+    border-radius: 28px;
+    padding: 40px 32px;
+    box-shadow: var(--shadow);
+  }
+  #results-emoji { font-size: 5rem; margin-bottom: 16px; }
+  #results-title { font-size: 2rem; font-weight: bold; color: var(--navy); margin-bottom: 8px; }
+  #results-stars { font-size: 2rem; margin-bottom: 16px; }
+  #results-score { font-size: 1.4rem; color: #555; margin-bottom: 8px; }
+  #results-time { font-size: 1rem; color: #888; margin-bottom: 20px; }
+  #results-message { font-size: 1.1rem; color: #444; margin-bottom: 28px; padding: 14px; background: #F3F4F6; border-radius: 14px; line-height: 1.6; }
+  .results-btn {
+    display: inline-block;
+    margin: 8px;
+    padding: 14px 30px;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s;
+  }
+  .results-btn:hover { transform: scale(1.04); }
+  #retry-btn { background: var(--coral); color: white; }
+  #home-btn { background: var(--navy); color: white; }
+  #next-level-btn { background: var(--grass); color: white; display: none; }
+
+  /* ========== KUMON TIPS MODAL ========== */
+  #tips-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  #tips-modal.show { display: flex; }
+  #tips-box {
+    background: white;
+    border-radius: 24px;
+    padding: 36px 32px;
+    max-width: 500px;
+    width: 92%;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+    animation: pop 0.3s ease;
+  }
+  #tips-box h3 { font-size: 1.5rem; color: var(--navy); margin-bottom: 16px; }
+  #tips-box ul { list-style: none; padding: 0; }
+  #tips-box ul li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 1rem; line-height: 1.5; }
+  #tips-box ul li:last-child { border-bottom: none; }
+  #tips-close {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+
+  /* ========== REPORT CARD SCREEN ========== */
+  #report-screen { max-width: 600px; margin: 0 auto; }
+  #report-screen h2 { font-size: 1.8rem; color: var(--navy); margin-bottom: 20px; text-align: center; }
+  .report-row {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .report-row-icon { font-size: 2rem; }
+  .report-row-info { flex: 1; }
+  .report-row-title { font-weight: bold; color: var(--navy); margin-bottom: 4px; }
+  .report-row-detail { font-size: 0.88rem; color: #666; }
+  .report-row-grade {
+    font-size: 1.6rem;
+    font-weight: bold;
+    width: 48px;
+    text-align: center;
+  }
+
+  /* ========== NAV TABS ========== */
+  #nav-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: white;
+    border-radius: 16px;
+    padding: 6px;
+    box-shadow: var(--shadow);
+  }
+  .nav-tab {
+    flex: 1;
+    padding: 10px 6px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    background: transparent;
+    color: #666;
+    transition: all 0.2s;
+  }
+  .nav-tab.active { background: var(--navy); color: white; }
+  .nav-tab:hover:not(.active) { background: #E8EAF6; color: var(--navy); }
+
+  /* ========== KUMON DAILY GOAL ========== */
+  #daily-goal-bar {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  #daily-goal-bar .goal-label { font-weight: bold; color: var(--navy); min-width: 160px; }
+  #daily-goal-progress-wrap { flex: 1; min-width: 120px; }
+  #daily-goal-bar-inner {
+    background: #ddd;
+    border-radius: 8px;
+    height: 14px;
+    overflow: hidden;
+  }
+  #daily-goal-fill {
+    height: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--grass), var(--sky));
+    transition: width 0.5s;
+  }
+  #daily-goal-text { font-size: 0.88rem; color: #888; margin-top: 4px; }
+  #daily-goal-reward { font-size: 1.4rem; }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes pop {
+    0%   { transform: scale(0.7); opacity: 0; }
+    80%  { transform: scale(1.06); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.08); }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+  }
+  @keyframes star-burst {
+    0%   { transform: scale(0) rotate(0deg); opacity: 1; }
+    100% { transform: scale(2.5) rotate(180deg); opacity: 0; }
+  }
+  .star-burst {
+    position: fixed;
+    font-size: 2rem;
+    pointer-events: none;
+    z-index: 300;
+    animation: star-burst 0.7s ease forwards;
+  }
+  .bounce { animation: bounce 0.8s ease infinite; }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 480px) {
+    #question-text { font-size: 2.2rem; }
+    .choice-btn { font-size: 1.4rem; padding: 14px 8px; }
+    #results-card { padding: 28px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="app-header">
+  <h1>⭐ Math Superstar Trainer</h1>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <span id="streak-badge">🔥 Streak: <span id="streak-num">0</span> days</span>
+    <span id="total-stars-badge">⭐ <span id="total-stars-num">0</span> stars</span>
+    <button onclick="showTips()" style="background:var(--sun);border:none;border-radius:12px;padding:6px 14px;font-weight:bold;cursor:pointer;font-size:0.9rem;">💡 Tips</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- NAV TABS -->
+  <div id="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('home')">🏠 Levels</button>
+    <button class="nav-tab" onclick="switchTab('report')">📊 My Progress</button>
+  </div>
+
+  <!-- DAILY GOAL -->
+  <div id="daily-goal-bar">
+    <div class="goal-label">📅 Today's Goal</div>
+    <div id="daily-goal-progress-wrap">
+      <div id="daily-goal-bar-inner"><div id="daily-goal-fill" style="width:0%"></div></div>
+      <div id="daily-goal-text">0 / 20 problems</div>
+    </div>
+    <div id="daily-goal-reward">🎯</div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div id="home-screen" class="screen active">
+    <div id="home-welcome">
+      <h2>Welcome, Math Superstar! 🚀</h2>
+      <p>Complete levels to earn stars and master 3rd grade math!</p>
+    </div>
+    <div id="levels-grid"></div>
+  </div>
+
+  <!-- PRACTICE SCREEN -->
+  <div id="practice-screen" class="screen">
+    <div id="practice-header">
+      <div id="practice-title"></div>
+      <div id="practice-meta">
+        <div id="timer-display">⏱ 0:00</div>
+        <div id="score-display">✅ 0</div>
+      </div>
+    </div>
+    <div id="practice-progress-wrap"><div id="practice-progress-bar" style="width:0%"></div></div>
+    <div id="practice-q-counter">Question 1 of 10</div>
+    <div id="question-card">
+      <div id="question-hint"></div>
+      <div id="question-text">?</div>
+      <div id="choices-grid" style="display:none"></div>
+      <div id="type-answer-wrap" style="display:none">
+        <input id="answer-input" type="number" placeholder="?" autocomplete="off" inputmode="numeric"/>
+        <button id="submit-btn" onclick="submitAnswer()">CHECK ✔</button>
+      </div>
+    </div>
+    <button onclick="goHome()" style="background:#eee;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-size:0.9rem;color:#555;">← Back to Levels</button>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="results-screen" class="screen">
+    <div id="results-card">
+      <div id="results-emoji"></div>
+      <div id="results-title"></div>
+      <div id="results-stars"></div>
+      <div id="results-score"></div>
+      <div id="results-time"></div>
+      <div id="results-message"></div>
+      <div>
+        <button id="retry-btn" class="results-btn" onclick="retryLevel()">🔄 Try Again</button>
+        <button id="next-level-btn" class="results-btn" onclick="nextLevel()">➡️ Next Level!</button>
+        <button id="home-btn" class="results-btn" onclick="goHome()">🏠 All Levels</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT SCREEN -->
+  <div id="report-screen" class="screen">
+    <h2>📊 My Progress Report</h2>
+    <div id="report-content"></div>
+  </div>
+
+</div><!-- end #main -->
+
+<!-- FEEDBACK OVERLAY -->
+<div id="feedback-overlay">
+  <div id="feedback-box">
+    <div id="feedback-emoji"></div>
+    <div id="feedback-msg"></div>
+    <div id="feedback-detail"></div>
+    <button id="feedback-next-btn" onclick="nextQuestion()">Next ➡️</button>
+  </div>
+</div>
+
+<!-- TIPS MODAL -->
+<div id="tips-modal">
+  <div id="tips-box">
+    <h3>💡 Kumon Math Tips for Success</h3>
+    <ul>
+      <li>📅 <strong>Practice every day</strong> — even 10 minutes daily beats 1 hour once a week!</li>
+      <li>🧠 <strong>Do it in your head first</strong> — try to think before writing or typing</li>
+      <li>⏱️ <strong>Speed matters</strong> — fast math facts free your brain for harder problems</li>
+      <li>💪 <strong>Mistakes are OK</strong> — every mistake teaches you something new</li>
+      <li>🔁 <strong>Repeat until it's easy</strong> — master each level before moving on</li>
+      <li>🌟 <strong>Get 9 or 10 right</strong> to earn the MASTER badge for a level</li>
+      <li>✨ <strong>For 3rd grade REACH</strong> — know your times tables 1–5 by heart!</li>
+    </ul>
+    <button id="tips-close" onclick="closeTips()">Got it! Let's practice! 💪</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DATA — KUMON-STYLE LEVELS
+// ============================================================
+const LEVELS = [
+  {
+    id: 0,
+    icon: '➕',
+    title: 'Addition Basics',
+    desc: 'Add numbers up to 20',
+    color: '#4FC3F7',
+    type: 'mc',
+    generator: () => {
+      const a = rnd(1,10), b = rnd(1,10);
+      return { q: `${a} + ${b} = ?`, answer: a+b, hint: '🍎 Count up from the bigger number!' };
+    }
+  },
+  {
+    id: 1,
+    icon: '🔢',
+    title: 'Double Digits Add',
+    desc: 'Add 2-digit numbers (no regrouping)',
+    color: '#66BB6A',
+    type: 'type',
+    generator: () => {
+      const a1=rnd(1,4), a2=rnd(0,4), b1=rnd(1,4), b2=rnd(0,4);
+      const a=a1*10+a2, b=b1*10+b2;
+      return { q: `${a} + ${b} = ?`, answer: a+b, hint: '💡 Add the ones, then the tens!' };
+    }
+  },
+  {
+    id: 2,
+    icon: '🔀',
+    title: 'Addition Regrouping',
+    desc: 'Add 2-digit numbers with carrying',
+    color: '#AB47BC',
+    type: 'type',
+    generator: () => {
+      const a=rnd(15,49), b=rnd(15,49);
+      return { q: `${a} + ${b} = ?`, answer: a+b, hint: '🔄 Remember to carry the 1!' };
+    }
+  },
+  {
+    id: 3,
+    icon: '➖',
+    title: 'Subtraction Basics',
+    desc: 'Subtract numbers within 20',
+    color: '#FF7043',
+    type: 'mc',
+    generator: () => {
+      const b=rnd(1,9), a=rnd(b,b+9);
+      return { q: `${a} − ${b} = ?`, answer: a-b, hint: '🔙 Count back from the bigger number!' };
+    }
+  },
+  {
+    id: 4,
+    icon: '⬇️',
+    title: 'Subtraction Regrouping',
+    desc: 'Subtract 2-digit numbers with borrowing',
+    color: '#EF5350',
+    type: 'type',
+    generator: () => {
+      const b=rnd(13,35), a=rnd(b+5,b+40);
+      return { q: `${a} − ${b} = ?`, answer: a-b, hint: '🏦 Borrow from the tens place!' };
+    }
+  },
+  {
+    id: 5,
+    icon: '🔢',
+    title: 'Skip Counting',
+    desc: 'Count by 2s, 3s, 4s, 5s, 10s',
+    color: '#26C6DA',
+    type: 'mc',
+    generator: () => {
+      const skip = pickFrom([2,3,4,5,10]);
+      const start = rnd(1,8) * skip;
+      const steps = rnd(2,5);
+      const seq = [];
+      for(let i=0;i<=steps+1;i++) seq.push(start + i*skip);
+      const blankIdx = rnd(2, steps);
+      const ans = seq[blankIdx];
+      const display = seq.map((v,i) => i===blankIdx ? '___' : v).join(', ');
+      return { q: display, answer: ans, hint: `⏭️ Counting by ${skip}s` };
+    }
+  },
+  {
+    id: 6,
+    icon: '✖️',
+    title: 'Intro Multiplication',
+    desc: 'Times tables: ×2, ×3, ×4, ×5, ×10',
+    color: '#FFA726',
+    type: 'mc',
+    generator: () => {
+      const tables=[2,3,4,5,10];
+      const t=pickFrom(tables), n=rnd(1,10);
+      const forms = [
+        { q:`${t} × ${n} = ?`, a:t*n },
+        { q:`${n} × ${t} = ?`, a:t*n },
+        { q:`What is ${t} groups of ${n}?`, a:t*n }
+      ];
+      const f=pickFrom(forms);
+      return { q: f.q, answer: f.a, hint: `⭐ ${t} × ${n}: count by ${t}s, ${n} times!` };
+    }
+  },
+  {
+    id: 7,
+    icon: '🏛️',
+    title: 'Place Value',
+    desc: 'Hundreds, Tens, and Ones',
+    color: '#78909C',
+    type: 'mc',
+    generator: () => {
+      const h=rnd(1,9), t=rnd(0,9), o=rnd(0,9);
+      const num=h*100+t*10+o;
+      const questions=[
+        { q:`${num} has ___ hundreds`, a:h },
+        { q:`${num} has ___ tens`, a:t },
+        { q:`${num} has ___ ones`, a:o },
+        { q:`What is the value of the tens digit in ${num}?`, a:t*10 },
+        { q:`What is the value of the hundreds digit in ${num}?`, a:h*100 },
+      ];
+      const q=pickFrom(questions);
+      return { q: q.q, answer: q.a, hint: `📍 ${num} = ${h} hundreds + ${t} tens + ${o} ones` };
+    }
+  },
+  {
+    id: 8,
+    icon: '📝',
+    title: 'Word Problems',
+    desc: 'Math in real life situations',
+    color: '#5C6BC0',
+    type: 'type',
+    generator: () => {
+      const templates = [
+        () => { const a=rnd(5,20),b=rnd(5,20); return { q:`Sam has ${a} apples. She gets ${b} more. How many apples does she have?`, answer:a+b, hint:'➕ Add them up!' }; },
+        () => { const a=rnd(15,30),b=rnd(5,14); return { q:`There are ${a} kids. ${b} go home. How many are left?`, answer:a-b, hint:'➖ Subtract to find what\'s left!' }; },
+        () => { const t=pickFrom([2,3,4,5]),n=rnd(2,6); return { q:`There are ${n} bags with ${t} cookies each. How many cookies total?`, answer:t*n, hint:`✖️ Multiply: ${n} × ${t}` }; },
+        () => { const a=rnd(10,50),b=rnd(10,50); return { q:`A book has ${a} pages. Another has ${b} pages. How many pages altogether?`, answer:a+b, hint:'➕ Add both books!' }; },
+        () => { const t=rnd(20,50),s=rnd(5,15); return { q:`You have $${t}. You spend $${s}. How much money do you have left?`, answer:t-s, hint:'💵 Subtract what you spent!' }; },
+        () => { const n=rnd(3,8),t=pickFrom([2,5,10]); return { q:`${n} kids each have ${t} stickers. How many stickers in all?`, answer:n*t, hint:`✖️ ${n} groups of ${t}` }; },
+        () => { const a=rnd(10,25),b=rnd(5,a-1); return { q:`${a} birds are on a wire. ${b} fly away. How many birds remain?`, answer:a-b, hint:'🐦 Subtract the ones that left!' }; },
+      ];
+      return pickFrom(templates)();
+    }
+  },
+  {
+    id: 9,
+    icon: '🍕',
+    title: 'Basic Fractions',
+    desc: 'Halves, thirds, and quarters',
+    color: '#EC407A',
+    type: 'mc',
+    generator: () => {
+      const problems = [
+        { q:'What is ½ of 10?', answer:5, hint:'Half = divide by 2' },
+        { q:'What is ½ of 16?', answer:8, hint:'Half = divide by 2' },
+        { q:'What is ¼ of 8?', answer:2, hint:'Quarter = divide by 4' },
+        { q:'What is ¼ of 20?', answer:5, hint:'Quarter = divide by 4' },
+        { q:'What is ⅓ of 9?', answer:3, hint:'Third = divide by 3' },
+        { q:'What is ⅓ of 12?', answer:4, hint:'Third = divide by 3' },
+        { q:'What is ½ of 24?', answer:12, hint:'Half = divide by 2' },
+        { q:'A pizza is cut into 4 equal pieces. You eat 1 piece. What fraction did you eat?', answer:1, hint:'1 out of 4 pieces' },
+        { q:'How many quarters make a whole?', answer:4, hint:'4 quarters = 1 whole' },
+        { q:'How many halves make a whole?', answer:2, hint:'2 halves = 1 whole' },
+        { q:'What is ¼ of 12?', answer:3, hint:'Divide 12 by 4' },
+        { q:'What is ½ of 18?', answer:9, hint:'Divide 18 by 2' },
+      ];
+      return pickFrom(problems);
+    }
+  },
+  {
+    id: 10,
+    icon: '🚀',
+    title: 'REACH Challenge',
+    desc: 'Mixed advanced problems — 3rd grade ready!',
+    color: '#1A237E',
+    type: 'type',
+    generator: () => {
+      const templates = [
+        () => { const a=rnd(30,99),b=rnd(30,99); return { q:`${a} + ${b} = ?`, answer:a+b, hint:'🔢 2-digit addition' }; },
+        () => { const b=rnd(20,50),a=rnd(b+10,99); return { q:`${a} − ${b} = ?`, answer:a-b, hint:'🔢 2-digit subtraction' }; },
+        () => { const t=pickFrom([3,4,5,6,7]),n=rnd(2,10); return { q:`${t} × ${n} = ?`, answer:t*n, hint:'✖️ Times tables!' }; },
+        () => { const t=pickFrom([2,3,4,5]),n=rnd(3,9); return { q:`${n} × ${t} = ?`, answer:n*t, hint:'✖️ Flip it if easier!' }; },
+        () => { const n=rnd(4,8),t=rnd(3,9); return { q:`${n} rows of ${t} seats. Total seats?`, answer:n*t, hint:'✖️ Multiply!' }; },
+        () => { const a=rnd(100,400),b=rnd(50,200); return { q:`${a} + ${b} = ?`, answer:a+b, hint:'🏛️ 3-digit addition' }; },
+        () => { const a=rnd(200,500),b=rnd(50,a-50); return { q:`${a} − ${b} = ?`, answer:a-b, hint:'🏛️ 3-digit subtraction' }; },
+        () => { const h=rnd(1,9),t=rnd(0,9),o=rnd(0,9); const n=h*100+t*10+o; return { q:`Hundreds digit of ${n}?`, answer:h, hint:'📍 First digit = hundreds' }; },
+      ];
+      return pickFrom(templates)();
+    }
+  }
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+const TOTAL_QUESTIONS = 10;
+const MASTERY_THRESHOLD = 0.9; // 90% to master
+const DAILY_GOAL = 20;
+
+let state = loadState();
+let currentLevel = null;
+let session = null;
+let timerInterval = null;
+let sessionStart = null;
+let currentTab = 'home';
+
+function defaultState() {
+  return {
+    streak: 0,
+    lastPlayDate: null,
+    totalStars: 0,
+    dailyProblems: 0,
+    lastDailyDate: null,
+    levels: LEVELS.map(l => ({
+      id: l.id,
+      attempts: 0,
+      bestScore: 0,
+      bestTime: null,
+      mastered: false,
+      stars: 0
+    }))
+  };
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('mathSuperstar') || 'null');
+    if (!s) return defaultState();
+    // migrate if new levels added
+    while (s.levels.length < LEVELS.length) {
+      s.levels.push({ id: s.levels.length, attempts:0, bestScore:0, bestTime:null, mastered:false, stars:0 });
+    }
+    return s;
+  } catch { return defaultState(); }
+}
+
+function saveState() {
+  localStorage.setItem('mathSuperstar', JSON.stringify(state));
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pickFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pad2(n) { return String(n).padStart(2,'0'); }
+function formatTime(secs) { return `${Math.floor(secs/60)}:${pad2(secs%60)}`; }
+function scoreToStars(pct) {
+  if (pct >= 1.0) return 3;
+  if (pct >= 0.7) return 2;
+  if (pct >= 0.4) return 1;
+  return 0;
+}
+function starsToEmoji(n) { return '⭐'.repeat(n) + '☆'.repeat(3-n); }
+function isLocked(levelId) {
+  if (levelId === 0) return false;
+  return !state.levels[levelId-1].mastered;
+}
+function checkStreak() {
+  const today = new Date().toDateString();
+  if (state.lastPlayDate !== today) {
+    const yesterday = new Date(Date.now() - 864e5).toDateString();
+    if (state.lastPlayDate === yesterday) state.streak++;
+    else if (state.lastPlayDate !== today) state.streak = 1;
+    state.lastPlayDate = today;
+  }
+}
+function checkDailyReset() {
+  const today = new Date().toDateString();
+  if (state.lastDailyDate !== today) {
+    state.dailyProblems = 0;
+    state.lastDailyDate = today;
+  }
+}
+
+// ============================================================
+//  RENDER HOME
+// ============================================================
+function renderHome() {
+  checkStreak();
+  checkDailyReset();
+  saveState();
+
+  document.getElementById('streak-num').textContent = state.streak;
+  document.getElementById('total-stars-num').textContent = state.totalStars;
+
+  // Daily goal bar
+  const pct = Math.min(state.dailyProblems / DAILY_GOAL * 100, 100);
+  document.getElementById('daily-goal-fill').style.width = pct + '%';
+  document.getElementById('daily-goal-text').textContent = `${Math.min(state.dailyProblems, DAILY_GOAL)} / ${DAILY_GOAL} problems`;
+  document.getElementById('daily-goal-reward').textContent = pct >= 100 ? '🏆' : (pct >= 50 ? '🌟' : '🎯');
+
+  const grid = document.getElementById('levels-grid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lvl, idx) => {
+    const ls = state.levels[idx];
+    const locked = isLocked(idx);
+    const card = document.createElement('div');
+    card.className = 'level-card' + (locked?' locked':'') + (ls.mastered?' mastered':'');
+    card.style.borderColor = ls.mastered ? '#F9A825' : 'transparent';
+
+    const progressPct = ls.attempts > 0 ? Math.round(ls.bestScore / TOTAL_QUESTIONS * 100) : 0;
+
+    card.innerHTML = locked
+      ? `<div class="lock-icon">🔒</div>
+         <div class="level-title">${lvl.title}</div>
+         <div class="level-desc">Master Level ${idx} to unlock</div>`
+      : `<div class="level-icon">${lvl.icon}</div>
+         <div class="level-title">Level ${idx+1}: ${lvl.title}</div>
+         <div class="level-desc">${lvl.desc}</div>
+         <div class="level-progress-bar-wrap"><div class="level-progress-bar" style="width:${progressPct}%"></div></div>
+         <div class="level-progress-text">${ls.attempts > 0 ? `Best: ${ls.bestScore}/${TOTAL_QUESTIONS} • ${starsToEmoji(ls.stars)}` : 'Not started yet'}</div>`;
+
+    if (!locked) card.onclick = () => startLevel(idx);
+    grid.appendChild(card);
+  });
+}
+
+// ============================================================
+//  PRACTICE
+// ============================================================
+function startLevel(levelId) {
+  currentLevel = levelId;
+  const lvl = LEVELS[levelId];
+
+  session = {
+    questions: [],
+    current: 0,
+    correct: 0,
+    elapsedSecs: 0
+  };
+
+  // Generate questions
+  for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+    session.questions.push(lvl.generator());
+  }
+
+  sessionStart = Date.now();
+  startTimer();
+  showScreen('practice-screen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const lvl = LEVELS[currentLevel];
+  const q = session.questions[session.current];
+  const n = session.current + 1;
+
+  document.getElementById('practice-title').textContent = `${lvl.icon} ${lvl.title}`;
+  document.getElementById('score-display').textContent = `✅ ${session.correct}`;
+  document.getElementById('practice-q-counter').textContent = `Question ${n} of ${TOTAL_QUESTIONS}`;
+  document.getElementById('practice-progress-bar').style.width = (session.current / TOTAL_QUESTIONS * 100) + '%';
+
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('question-hint').textContent = q.hint || '';
+
+  const choicesEl = document.getElementById('choices-grid');
+  const typeEl = document.getElementById('type-answer-wrap');
+  const inputEl = document.getElementById('answer-input');
+
+  if (lvl.type === 'mc') {
+    choicesEl.style.display = 'grid';
+    typeEl.style.display = 'none';
+    renderChoices(q.answer);
+  } else {
+    choicesEl.style.display = 'none';
+    typeEl.style.display = 'flex';
+    inputEl.value = '';
+    inputEl.className = '';
+    inputEl.disabled = false;
+    setTimeout(() => inputEl.focus(), 100);
+  }
+}
+
+function renderChoices(correct) {
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  const distractors = generateDistractors(correct, 3);
+  const options = shuffle([correct, ...distractors]);
+  options.forEach(val => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = val;
+    btn.onclick = () => handleChoice(btn, val, correct);
+    grid.appendChild(btn);
+  });
+}
+
+function generateDistractors(correct, count) {
+  const set = new Set();
+  const attempts = 50;
+  let i = 0;
+  while (set.size < count && i < attempts) {
+    i++;
+    const offsets = [-2,-1,1,2,-10,10,-5,5,-3,3];
+    let d = correct + pickFrom(offsets);
+    if (d < 0) d = correct + rnd(1,5);
+    if (d !== correct && d >= 0) set.add(d);
+  }
+  while (set.size < count) set.add(correct + set.size + 1);
+  return Array.from(set);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i=a.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function handleChoice(btn, selected, correct) {
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  if (selected === correct) {
+    btn.classList.add('correct');
+    showFeedback(true, correct);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      if (parseInt(b.textContent) === correct) b.classList.add('correct');
+    });
+    showFeedback(false, correct);
+  }
+}
+
+function submitAnswer() {
+  const input = document.getElementById('answer-input');
+  const val = parseInt(input.value);
+  if (isNaN(val)) { input.focus(); return; }
+  const correct = session.questions[session.current].answer;
+  input.disabled = true;
+  if (val === correct) {
+    input.classList.add('correct');
+    showFeedback(true, correct);
+  } else {
+    input.classList.add('wrong');
+    showFeedback(false, correct);
+  }
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const ta = document.getElementById('type-answer-wrap');
+    if (ta.style.display !== 'none' && !document.getElementById('answer-input').disabled) {
+      submitAnswer();
+    }
+    if (document.getElementById('feedback-overlay').classList.contains('show')) {
+      nextQuestion();
+    }
+  }
+});
+
+// ============================================================
+//  FEEDBACK
+// ============================================================
+const CORRECT_MSGS = ['Amazing! 🎉','Super! ⭐','Excellent! 🚀','Brilliant! 💡','You got it! 🌟','Perfect! 🏆','Great job! 👏','Wow! 🎊'];
+const WRONG_MSGS   = ['Almost! 💪','Keep trying! 🔄','Nearly there! 😊','Good try! 🌱','You\'ll get it! 💫'];
+
+function showFeedback(isCorrect, correctAnswer) {
+  if (isCorrect) {
+    session.correct++;
+    state.dailyProblems++;
+    checkDailyReset();
+    saveState();
+    updateDailyGoalUI();
+    spawnStarBurst();
+  }
+  document.getElementById('score-display').textContent = `✅ ${session.correct}`;
+
+  const overlay = document.getElementById('feedback-overlay');
+  document.getElementById('feedback-emoji').textContent = isCorrect ? pickFrom(['🎉','🌟','⭐','🏆','🎊','🚀']) : pickFrom(['😊','💪','🌱','💫','🔄']);
+  document.getElementById('feedback-msg').textContent = isCorrect ? pickFrom(CORRECT_MSGS) : pickFrom(WRONG_MSGS);
+  document.getElementById('feedback-detail').textContent = isCorrect ? '' : `The answer was: ${correctAnswer}`;
+  document.getElementById('feedback-next-btn').textContent = session.current < TOTAL_QUESTIONS-1 ? 'Next ➡️' : 'See Results! 🏁';
+
+  overlay.classList.add('show');
+}
+
+function nextQuestion() {
+  document.getElementById('feedback-overlay').classList.remove('show');
+  session.current++;
+  if (session.current >= TOTAL_QUESTIONS) {
+    finishSession();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ============================================================
+//  TIMER
+// ============================================================
+function startTimer() {
+  clearInterval(timerInterval);
+  session.elapsedSecs = 0;
+  sessionStart = Date.now();
+  timerInterval = setInterval(() => {
+    session.elapsedSecs = Math.floor((Date.now() - sessionStart) / 1000);
+    const display = document.getElementById('timer-display');
+    display.textContent = `⏱ ${formatTime(session.elapsedSecs)}`;
+    // Urgency after 5 min
+    display.classList.toggle('urgent', session.elapsedSecs > 300);
+  }, 1000);
+}
+
+function stopTimer() { clearInterval(timerInterval); }
+
+// ============================================================
+//  FINISH SESSION
+// ============================================================
+function finishSession() {
+  stopTimer();
+  const lvl = LEVELS[currentLevel];
+  const ls = state.levels[currentLevel];
+  const pct = session.correct / TOTAL_QUESTIONS;
+  const stars = scoreToStars(pct);
+  const newMastery = pct >= MASTERY_THRESHOLD;
+
+  ls.attempts++;
+  if (session.correct > ls.bestScore) ls.bestScore = session.correct;
+  if (ls.bestTime === null || session.elapsedSecs < ls.bestTime) ls.bestTime = session.elapsedSecs;
+  if (stars > ls.stars) {
+    const diff = stars - ls.stars;
+    state.totalStars += diff;
+    ls.stars = stars;
+  }
+  if (!ls.mastered && newMastery) ls.mastered = true;
+
+  checkStreak();
+  saveState();
+
+  // Show results
+  const emoji = pct === 1 ? '🏆' : pct >= 0.9 ? '🌟' : pct >= 0.7 ? '⭐' : pct >= 0.5 ? '😊' : '💪';
+  const title = pct === 1 ? 'PERFECT SCORE!' : pct >= 0.9 ? 'MASTERED!' : pct >= 0.7 ? 'Great Work!' : pct >= 0.5 ? 'Good Effort!' : 'Keep Practicing!';
+
+  const messages = {
+    perfect: `You got every single question right! That's incredible! 🎊 You are truly a Math Superstar! Keep this up and 3rd grade REACH will be a breeze!`,
+    mastered: `You mastered this level with ${session.correct} out of ${TOTAL_QUESTIONS}! ⭐ You've unlocked the next challenge!`,
+    great: `${session.correct} out of ${TOTAL_QUESTIONS} — you're doing great! Practice a little more to master this level.`,
+    good: `${session.correct} out of ${TOTAL_QUESTIONS}. Good try! Review the ones you missed and try again.`,
+    keep: `${session.correct} out of ${TOTAL_QUESTIONS}. Don't give up — Kumon says: practice makes perfect! Try again! 💪`
+  };
+  const msgKey = pct===1?'perfect':pct>=0.9?'mastered':pct>=0.7?'great':pct>=0.5?'good':'keep';
+
+  document.getElementById('results-emoji').textContent = emoji;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-stars').textContent = starsToEmoji(stars);
+  document.getElementById('results-score').textContent = `${session.correct} / ${TOTAL_QUESTIONS} correct`;
+  document.getElementById('results-time').textContent = `Time: ${formatTime(session.elapsedSecs)}`;
+  document.getElementById('results-message').textContent = messages[msgKey];
+
+  const nextBtn = document.getElementById('next-level-btn');
+  if (newMastery && currentLevel < LEVELS.length-1) {
+    nextBtn.style.display = 'inline-block';
+  } else {
+    nextBtn.style.display = 'none';
+  }
+
+  showScreen('results-screen');
+  document.getElementById('streak-num').textContent = state.streak;
+  document.getElementById('total-stars-num').textContent = state.totalStars;
+}
+
+// ============================================================
+//  REPORT CARD
+// ============================================================
+function renderReport() {
+  const el = document.getElementById('report-content');
+  el.innerHTML = '';
+
+  // Summary card
+  const totalLevels = LEVELS.length;
+  const masteredCount = state.levels.filter(l=>l.mastered).length;
+  const reachReady = masteredCount >= 8;
+
+  const summary = document.createElement('div');
+  summary.style = 'background:white;border-radius:16px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.1);margin-bottom:20px;text-align:center;';
+  summary.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:8px;">${reachReady?'🏆':'🌟'}</div>
+    <div style="font-size:1.3rem;font-weight:bold;color:#1A237E;margin-bottom:6px;">
+      ${reachReady ? '🎉 REACH Program Ready!' : `${masteredCount} of ${totalLevels} levels mastered`}
+    </div>
+    <div style="color:#555;font-size:0.95rem;">Total Stars: ⭐ ${state.totalStars} &nbsp;|&nbsp; 🔥 Streak: ${state.streak} days</div>
+    ${reachReady ? '<div style="margin-top:12px;background:#E8F5E9;border-radius:10px;padding:10px;color:#2E7D32;font-weight:bold;">You are ready for 3rd Grade REACH! Keep it up! 🚀</div>' : '<div style="margin-top:12px;background:#E3F2FD;border-radius:10px;padding:10px;color:#1565C0;">Keep practicing to become REACH ready!</div>'}
+  `;
+  el.appendChild(summary);
+
+  // Per-level rows
+  LEVELS.forEach((lvl, idx) => {
+    const ls = state.levels[idx];
+    const locked = isLocked(idx);
+    const row = document.createElement('div');
+    row.className = 'report-row';
+
+    let grade = '—';
+    let gradeColor = '#aaa';
+    if (!locked && ls.attempts > 0) {
+      const pct = ls.bestScore / TOTAL_QUESTIONS;
+      if (pct >= 0.9) { grade = 'A'; gradeColor = '#43A047'; }
+      else if (pct >= 0.8) { grade = 'B'; gradeColor = '#66BB6A'; }
+      else if (pct >= 0.7) { grade = 'C'; gradeColor = '#FFA726'; }
+      else if (pct >= 0.6) { grade = 'D'; gradeColor = '#FF7043'; }
+      else { grade = 'F'; gradeColor = '#E53935'; }
+    }
+
+    row.innerHTML = `
+      <div class="report-row-icon">${locked?'🔒':lvl.icon}</div>
+      <div class="report-row-info">
+        <div class="report-row-title">Level ${idx+1}: ${lvl.title}</div>
+        <div class="report-row-detail">
+          ${locked ? 'Locked — master previous level' :
+            ls.attempts === 0 ? 'Not started yet' :
+            `Best: ${ls.bestScore}/${TOTAL_QUESTIONS} | ${starsToEmoji(ls.stars)} | ${ls.attempts} attempt${ls.attempts>1?'s':''} ${ls.mastered?'| ✅ MASTERED':''}`
+          }
+        </div>
+      </div>
+      <div class="report-row-grade" style="color:${gradeColor}">${grade}</div>
+    `;
+    el.appendChild(row);
+  });
+}
+
+// ============================================================
+//  UI HELPERS
+// ============================================================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  document.getElementById('nav-tabs').style.display = (name === 'practice-screen' || name === 'results-screen') ? 'none' : 'flex';
+  document.getElementById('daily-goal-bar').style.display = (name === 'practice-screen') ? 'none' : 'flex';
+  if (name === 'home-screen') renderHome();
+  if (name === 'report-screen') renderReport();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['home','report'][i] === tab));
+  if (tab === 'home') showScreen('home-screen');
+  if (tab === 'report') showScreen('report-screen');
+}
+
+function goHome() {
+  stopTimer();
+  showScreen('home-screen');
+  switchTab('home');
+}
+
+function retryLevel() { startLevel(currentLevel); }
+
+function nextLevel() {
+  if (currentLevel < LEVELS.length-1) startLevel(currentLevel+1);
+  else goHome();
+}
+
+function showTips() { document.getElementById('tips-modal').classList.add('show'); }
+function closeTips() { document.getElementById('tips-modal').classList.remove('show'); }
+
+function updateDailyGoalUI() {
+  const pct = Math.min(state.dailyProblems / DAILY_GOAL * 100, 100);
+  document.getElementById('daily-goal-fill').style.width = pct + '%';
+  document.getElementById('daily-goal-text').textContent = `${Math.min(state.dailyProblems, DAILY_GOAL)} / ${DAILY_GOAL} problems`;
+  document.getElementById('daily-goal-reward').textContent = pct >= 100 ? '🏆' : (pct >= 50 ? '🌟' : '🎯');
+}
+
+function spawnStarBurst() {
+  const stars = ['⭐','🌟','✨','💫'];
+  for (let i=0; i<3; i++) {
+    const el = document.createElement('div');
+    el.className = 'star-burst';
+    el.textContent = pickFrom(stars);
+    el.style.left = (20 + Math.random()*60) + 'vw';
+    el.style.top = (20 + Math.random()*60) + 'vh';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+checkStreak();
+checkDailyReset();
+saveState();
+renderHome();
+showScreen('home-screen');
+</script>
+</body>
+</html>
